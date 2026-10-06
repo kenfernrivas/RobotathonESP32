@@ -40,6 +40,12 @@ limitations under the License.
 // from "sdkconfig.defaults" with:
 //    CONFIG_BLUEPAD32_USB_CONSOLE_ENABLE=n
 
+//labelling the pins - AXY
+#define IN1 17
+#define IN2 16
+#define IN3 22
+#define IN4 23
+
 GamepadPtr myGamepads[BP32_MAX_GAMEPADS];
 
 // This callback gets called any time a new gamepad is connected.
@@ -106,7 +112,7 @@ void setup() {
     servo.setPeriodHertz(50);
     servo.attach(12, 1000, 2000);
 
-    // Serial.begin(115200);
+    Serial.begin(115200);
     // sensor1.setFilterRate(0.1f);
 
     // qtr.setTypeRC(); // or setTypeAnalog()
@@ -118,15 +124,39 @@ void setup() {
     //     delay(20);
     // }
     // qtr.calibrate();
+
+    // set up pin mode - AXY
+    pinMode(IN1, OUTPUT);
+    pinMode(IN2, OUTPUT);
+    pinMode(IN3, OUTPUT);
+    pinMode(IN4, OUTPUT);
+    Console.printf("Setup complete\n");
 }
+
+// int x=1;
 
 // Arduino loop function. Runs in CPU 1
 void loop() {
+
+    // if (x==1) {
+    //     // set up pin mode - AXY
+    //     pinMode(IN1, OUTPUT);
+    //     pinMode(IN2, OUTPUT);
+    //     pinMode(IN3, OUTPUT);
+    //     pinMode(IN4, OUTPUT);
+    //     Console.printf("Setup complete\n");
+    //     x++;
+    // }
+
     // This call fetches all the gamepad info from the NINA (ESP32) module.
     // Just call this function in your main loop.
     // The gamepads pointer (the ones received in the callbacks) gets updated
     // automatically.
     BP32.update();
+
+    // test to see if motor will go forward - AXY
+    // digitalWrite(IN1, HIGH);
+    // digitalWrite(IN2, LOW);
 
     // It is safe to always do this before using the gamepad API.
     // This guarantees that the gamepad is valid and connected.
@@ -135,7 +165,34 @@ void loop() {
 
         if (myGamepad && myGamepad->isConnected()) {
 
-            servo.write( ((((float) myGamepad->axisY()) / 512.0f) * 500) + 1500 );
+            servo.write( ((((float) myGamepad->axisY()) / 512.0f) * 500) + 1500 ); 
+            // line above is from base code: Copilot stataes must use servo.writeMicroseconds(...) becasue normally expects degrees but is giving microseconds but haven't changed yet - AXY
+
+            // test for consol control motors if work above -AXY
+            int joy = myGamepad->axisY();
+            if (joy<0) {
+                digitalWrite(IN1, HIGH);
+                digitalWrite(IN2, LOW);    // forward
+                digitalWrite(IN3, HIGH);
+                digitalWrite(IN4, LOW); 
+                Console.printf("Forward\n");
+                delay(1000);
+            } else if (joy>0) {
+                digitalWrite(IN1, LOW);
+                digitalWrite(IN2, HIGH);   // reverse
+                digitalWrite(IN3, LOW);
+                digitalWrite(IN4, HIGH);
+                Console.printf("Reverse\n");
+                delay(1000);
+            } else {
+                digitalWrite(IN1, LOW);
+                digitalWrite(IN2, LOW);    // stop
+                digitalWrite(IN3, LOW);
+                digitalWrite(IN4, LOW);
+                Console.printf("Stop\n");
+                delay(1000);
+            }
+            //end added changes -AY
 
             // Another way to query the buttons, is by calling buttons(), or
             // miscButtons() which return a bitmask.
