@@ -45,6 +45,7 @@ limitations under the License.
 #define IN2 16
 #define IN3 22
 #define IN4 23
+#define IN5 12
 
 GamepadPtr myGamepads[BP32_MAX_GAMEPADS];
 
@@ -130,7 +131,10 @@ void setup() {
     pinMode(IN2, OUTPUT);
     pinMode(IN3, OUTPUT);
     pinMode(IN4, OUTPUT);
+    pinMode(IN5, OUTPUT);
     Console.printf("Setup complete\n");
+
+    servo.attach(IN5);
 }
 
 // int x=1;
@@ -165,7 +169,7 @@ void loop() {
 
         if (myGamepad && myGamepad->isConnected()) {
 
-            servo.write( ((((float) myGamepad->axisY()) / 512.0f) * 500) + 1500 ); 
+            // servo.write( ((((float) myGamepad->axisX()) / 512.0f) * 500) + 1500 ); 
             // line above is from base code: Copilot stataes must use servo.writeMicroseconds(...) becasue normally expects degrees but is giving microseconds but haven't changed yet - AXY
 
             // test for consol control motors if work above -AXY
@@ -175,24 +179,39 @@ void loop() {
                 digitalWrite(IN2, LOW);    // forward
                 digitalWrite(IN3, HIGH);
                 digitalWrite(IN4, LOW); 
-                Console.printf("Forward\n");
-                delay(1000);
+                // Console.printf("Forward\n");
+                //delay(1000);
             } else if (joy>0) {
                 digitalWrite(IN1, LOW);
                 digitalWrite(IN2, HIGH);   // reverse
                 digitalWrite(IN3, LOW);
                 digitalWrite(IN4, HIGH);
-                Console.printf("Reverse\n");
-                delay(1000);
+                // Console.printf("Reverse\n");
+                // delay(1000);
             } else {
                 digitalWrite(IN1, LOW);
                 digitalWrite(IN2, LOW);    // stop
                 digitalWrite(IN3, LOW);
                 digitalWrite(IN4, LOW);
-                Console.printf("Stop\n");
+                // Console.printf("Stop\n");
+                // delay(1000);
+            }
+
+            int stick = myGamepad->axisRY();
+            if (stick<0) {
+                servo.write(6000);
+                Console.printf("servo forward\n");
+                //delay(1000);
+            } else if (stick>0) {
+                servo.write(-3000); 
+                Console.printf("servo reverse\n");
+                // delay(1000);
+            } else {
+                servo.write(1500);               
+                Console.printf("servo stopped\n");
                 delay(1000);
             }
-            //end added changes -AY
+            //end added changes -AXY
 
             // Another way to query the buttons, is by calling buttons(), or
             // miscButtons() which return a bitmask.
