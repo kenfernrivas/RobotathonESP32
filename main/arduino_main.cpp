@@ -104,7 +104,7 @@ Servo servo;
 ESP32SharpIR sensor1( ESP32SharpIR::GP2Y0A21YK0F, 27);
 QTRSensors qtr;
 
-uint16_t sensors[2];
+uint16_t sensors[4];
 
 // Arduino setup function. Runs in CPU 1
 void setup() {
@@ -132,7 +132,7 @@ void setup() {
     sensor1.setFilterRate(0.1f);
 
     qtr.setTypeAnalog();
-    qtr.setSensorPins((const uint8_t[]) {26, 27}, 2);
+    qtr.setSensorPins((const uint8_t[]) {14, 27, 26, 25}, 4);
     for (uint8_t i = 0; i < 250; i++)
     {
         Serial.println("calibrating");
@@ -293,14 +293,14 @@ void loop() {
     }
 
     qtr.readLineBlack(sensors); // Get calibrated sensor values returned into sensors[]
-    Console.printf("S1: %d S2: %d\n", sensors[0], sensors[1]);
+    Console.printf("S1: %d S2: %d S3: %d S4: %d\n", sensors[0], sensors[1], sensors[2], sensors[3]);
     delay(250);
 
     // Serial.println(sensor1.getDistanceFloat());
 
-    // uint16_t sensors[3];
-    // int16_t position = qtr.readLineBlack(sensors);
-    // int16_t error = position - 1000;
+    uint16_t sensors[4];
+    int16_t position = qtr.readLineBlack(sensors);
+    int16_t error = position - 1000;
     // if (error < 0)
     // {
     //     Serial.println("On the left");
